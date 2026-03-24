@@ -52,10 +52,23 @@ void displayBoard(GameState g);
 
 /* Input */
 void getMove(int *row, int *col);
-int isValidPos(int row, int col);
+
+int isValidPos(int row, int col)
+{
+    int valid = 0;
+
+    if (row>=0 && row<4 && col>=0 && col<4)
+        valid = 1;
+
+    return valid;
+}
 
 /* Game Actions */
-void removePos(GameState *g, int row, int col);
+void removePos(GameState *g, int row, int col)
+{
+    // code here but idk wtf to do
+}
+
 void replacePos(GameState *g, int row, int col);
 void expandPos(GameState *g, int row, int col);
 void updatePos(GameState *g, int row, int col);
@@ -67,4 +80,22 @@ int countFreeCells(GameState g);
 
 /* Game Status */
 void checkGameOver(GameState *g);
-void showResult(GameState g);
+
+void showResult(GameState g)
+{
+    int nRed, nBlue; // pang count sa pieces
+
+    nRed = countPieces(g.R); //array pointing to red pieces nd so on..
+    nBlue = countPieces(g.B);
+
+    printf("| ------- GAME OVER ------- |"); // idk pa ano display adjust k nalang soon
+    printf("Red pieces: %d\n", nRed);
+    printf("Blue pieces: %d\n", nBlue);
+
+    if (nRed > nBlue)
+        printf("WINNER: RED\n");
+    else if (nBlue > nRed)
+        printf("WINNER: BLUE\n");
+    else
+        print("RESULT: DRAW\n");
+}
