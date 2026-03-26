@@ -51,18 +51,93 @@ void initializeGame(GameState *g)
 void displayBoard(GameState g)
 {
     /*
-    hi kung sino man gagawa nito, i think need mo magsearch sa web para sa colors
-    need kasi madisplay yung blue and red sa board i think...
-    - shen :>
+   displayboard has 3 sets  in a visual grid
+   R - Red
+   B - Blue
+   S - Occupied
 
-    btw ok lang ata kahit iba nag-author kasi tinanong ko friend ko ano
-    ginawa nila sa colors tas sabi nila kumuha lang raw sila header file
-    sa web tapos inapply nalang nila sa code nila
+   4x4 matrix sya and provides feedback sa kung sino is currently moving and ung current "population" ng board
+   accd sa specs, may red and blue pieces, and grids
+
+   for red pieces, "\033[1;31m"
+   for blue, "\033[1;34m"
+   grid line color, "\033[0;37m"
+   para maiwasan color bleed, ung reset: "\033[0m"
     */
+
+    int i, j;
+
+    // define the colors
+    const char *RED = "\033[1;31m";  
+    const char *BLUE = "\033[1;34m";
+    const char *BOARD = "\033[0;37m";  
+    const char *RESET = "\033[0m";
+
+    printf("\n%s    0   1   2   3%s\n", BOARD, RESET);
+    printf("%s  +---+---+---+---+%s\n", BOARD, RESET);
+
+    for(i = 0; i < 4; i++) 
+    {
+
+        printf("%s%d |%s", BOARD, i, RESET);
+
+        for(j = 0; j < 4; j++) 
+        {
+        // eto ung if nasa set R or B ung pieces
+            if(g.R[i][j] == 1)
+                printf(" %sR%s %s|%s", RED, RESET, BOARD, RESET);
+            else if (g.B[i][j] == 1)
+                printf(" %sB%s %s|%s", BLUE, RESET, BOARD, RESET);
+            else
+                printf("   %s|%s", BOARD, RESET); 
+        }
+        // print pang separate pero in board color
+        printf("\n%s  +---+---+---+---+%s\n", BOARD, RESET);
+    }
+
+    // eto ung current turn
+    if (g.go == 0) 
+        printf("Current Turn: %sRED%s\n", RED, RESET);
+    else 
+        printf("Current Turn: %sBLUE%s\n", BLUE, RESET);
+
+    // display population
+    printf("Current Val: %d\n", g.val);
 }
 
-/* Input */
+// input
 void getMove(int *row, int *col);
+{
+    int r, c;
+    int valid = 0;
+
+    while (!valid)
+    {
+        printf("Enter your move (row and col, 0-3): ");
+        
+        // check if input is numeric
+        if (scanf("%d %d", &r, &c) == 2)
+        {
+            // check if the position is within set M
+            if (isValidPos(r, c))
+            {
+                *row = r;
+                *col = c;
+                valid = 1;
+            }
+            else
+            {
+                printf("Invalid position. Must be between 0 and 3.\n");
+            }
+        }
+        else
+        {
+            printf("Invalid input format. Please enter two integers.\n");
+            // getchar pampatanggal infinite loops
+            while (getchar() != '\n');
+        }
+    }
+}
 
 int isValidPos(int row, int col)
 {
