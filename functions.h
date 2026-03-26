@@ -20,9 +20,30 @@ typedef struct
 
 
 /* ============================= */
-/*     FUNCTION PROTOTYPES       */
+/* FUNCTION PROTOTYPES      */
 /* ============================= */
 
+
+void initializeGame(GameState *g); 
+void displayBoard(GameState g);
+
+void getMove(int *row, int *col); 
+int isValidPos(int row, int col); 
+
+void removePos(GameState *g, int row, int col); 
+void replacePos(GameState *g, int row, int col); 
+void expandPos(GameState *g, int row, int col); 
+void updatePos(GameState *g, int row, int col); 
+void nextPlayerMove(GameState *g, int row, int col);
+
+int countPieces(int board[4][4]);
+int countFreeCells(GameState g);
+
+void checkGameOver(GameState *g);
+void showResult(GameState g);
+
+/* ------------------------------------------------------------- */
+    
 /* Initialization */
 void initializeGame(GameState *g)
 {
