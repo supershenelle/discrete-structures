@@ -209,7 +209,7 @@ void removePos(GameState *g, int row, int col)
                     //remove red piece
                     g->R[neighborRow][neighborCol] = 0;
                     //update state
-                    g->R[neighborRow][neighborCol] = 0;
+                    g->S[neighborRow][neighborCol] = 0;
                 }
             }
         }
@@ -258,7 +258,7 @@ void replacePos(GameState *g, int row, int col)
                     //replace to red
                     g->B[neighborRow][neighborCol] = 1;
                     //update state
-                    g->R[neighborRow][neighborCol] = 1;
+                    g->S[neighborRow][neighborCol] = 1;
                 }
             }
         }
@@ -270,26 +270,34 @@ void expandPos(GameState *g, int row, int col)
     /* now, i cant make perfect sense of it but according to the specs,
             u = (a-1,b), d = (a+1,b), k = (a,b-1), r = (a, b+1) */
 
-int dr[] = {-1, 1, 0, 0};
-int dc[] = {0, 0, -1, 1};
+int dr[4] = {-1, 1, 0, 0};
+int dc[4] = {0, 0, -1, 1};
 
-removePos(g, row, col);
-    
-for(int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
         int nr = row + dr[i];
         int nc = col + dc[i];
+
         if (isValidPos(nr, nc)) {
-            replacePos(g, nr, nc);
+            if (g->go == 0) {
+                if (g->B[nr][nc] == 1) {
+                    g->B[nr][nc] = 0;
+                    g->R[nr][nc] = 1;
+                }
+            } else {
+                if (g->R[nr][nc] == 1) {
+                    g->R[nr][nc] = 0;
+                    g->B[nr][nc] = 1;
+                }
+            }
+            g->S[nr][nc] = (g->R[nr][nc] || g->B[nr][nc]);
         }
     }
 }
-
 
 void updatePos(GameState *g, int row, int col)
 {
     g->good = 0; // good = false
     
-    // (pos ∉ S) -> (S = S ∪ {pos} AND good = ~good)
     if (g->S[row][col] == 0) {
         g->S[row][col] = 1;
         g->good = !g->good;
