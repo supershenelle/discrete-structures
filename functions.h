@@ -164,7 +164,7 @@ int isValidPos(int row, int col)
 {
     int valid = 0;
 
-    if (row>=0 && row<4 && col>=0 && col<4)
+    if (row>=1 && row<4 && col>=1 && col<4)
         valid = 1;
 
     return valid;
@@ -179,7 +179,7 @@ void removePos(GameState *g, int row, int col)
     int i;
     int neighborRow, neighborCol;
 
-    for (i=0; i<4; i++)
+    for (i = 0; i < 4; i++)
     {
         neighborRow = row + changeRow[i];
         neighborCol = col + changeCol[i];
@@ -224,7 +224,7 @@ void replacePos(GameState *g, int row, int col)
     int i;
     int neighborRow, neighborCol;
 
-    for (i=0; i<4; i++)
+    for (i = 0; i < 4; i++)
     {
         neighborRow = row + changeRow[i];
         neighborCol = col + changeCol[i];
@@ -269,11 +269,11 @@ void expandPos(GameState *g, int row, int col)
 {
     /* now, i cant make perfect sense of it but according to the specs,
             u = (a-1,b), d = (a+1,b), k = (a,b-1), r = (a, b+1) */
-
+int i;
 int dr[4] = {-1, 1, 0, 0};
 int dc[4] = {0, 0, -1, 1};
 
-    for (int i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
         int nr = row + dr[i];
         int nc = col + dc[i];
 
@@ -311,10 +311,11 @@ void updatePos(GameState *g, int row, int col)
 
 void nextPlayerMove(GameState *g, int row, int col)
 {
-if (!g->over) {
+int i, j;
+if (g->over == 0) {
         
         /* initial piece placement */
-        if (g->start) {
+        if (g->start == 1) {
             // (start AND go) -> Red move
             if (g->go == 0) { 
                 g->R[row][col] = 1;
@@ -328,7 +329,6 @@ if (!g->over) {
         } 
             
         else {
-           
             if ((g->go == 0 && g->R[row][col] == 1) || (g->go == 1 && g->B[row][col] == 1)) {
                 updatePos(g, row, col); 
                 g->good = 1;      
@@ -336,17 +336,16 @@ if (!g->over) {
         }
 
         // (start AND |R|=1 AND |B|=1) -> start = false
-        if (g->start && countPieces(g->R) >= 1 && countPieces(g->B) >= 1) {
+        if (g->start == 1 && countPieces(g->R) >= 1 && countPieces(g->B) >= 1) {
             g->start = 0;
         }
 
-        if (g->good) {
+        if (g->good == 1) {
             g->good = 0;      // good = ¬good 
             g->go = !g->go;   // go = ¬go 
             g->val = g->val + 1; // val = val + 1
             
             // Reset T so the next player's expansion doesn't think cells were already visited 
-            int i, j;
             for(i = 0; i < 4; i++) {
                 for(j = 0; j < 4; j++) {
                     g->T[i][j] = 0;
@@ -357,37 +356,36 @@ if (!g->over) {
 }
 
 /* Utility Functions */
-int countPieces(int board[4][4]) {
-    
-    int count = 0;
-    for(int i=0; i<4; i++)
-        for(int j=0; j<4; j++)
+int countPieces(int board[4][4]) 
+{
+    int i, j, count = 0;
+    for(int i = 0; i < 4; i++)
+        for(int j = 0; j < 4; j++)
             if(board[i][j])
                 count++;
     
     return count;
 }
 
-int countFreeCells(GameState g) {
-    int occupied = 0;
-    for(int i=0; i<4; i++)
-        for(int j=0; j<4; j++)
-            if(g.R[i][j] || g.B[i][j]) occupied++;
+int countFreeCells(GameState g) 
+{
+    int i, j, occupied = 0;
+    for(int i = 0; i < 4; i++)
+        for(int j = 0; j < 4; j++)
+            if(g.R[i][j] == 1|| g.B[i][j] == 1) 
+                occupied++;
     return 16 - occupied; // 4x4 matrix
 }
 
 /* Game Status */
-void checkGameOver(GameState *g) {
+void checkGameOver(GameState *g) 
+{
     int rCount = countPieces(g->R);
     int bCount = countPieces(g->B);
     int free = countFreeCells(*g);
 
-    if (free == 0 || g->val >= 20) {
+    if (free == 3 || g->val >= 20 || (!g->start && (rCount == 0 || bCount == 0)))
         g->over = 1;
-    }
-    if (!g->start && (rCount == 0 || bCount == 0)) {
-        g->over = 1;
-    }
 }
 
 void showResult(GameState g)
