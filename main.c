@@ -7,7 +7,7 @@ UPDATE LOG AS OF 24/03/2026:
 - added showResult ()
 */
 
-int main
+int main ()
 {
     GameState game;
     int row, col;
