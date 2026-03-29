@@ -7,11 +7,11 @@
 typedef struct
 {
     int good;  
-    int go;     
-    int start;
+    int go;    
+    int start;  
     int over;  
-    int found; 
-    int val;  
+    int found;  
+    int val;   
 
     int R[4][4];
     int B[4][4];
@@ -42,17 +42,16 @@ void displayDivider()
     printf("===========================================\n");
 }
 
-/* Initialization */
 void initializeGame(GameState *g)
 {
     int i, j;
 
     g->good = 0;   
-    g->go = 1;    
+    g->go = 1;     
     g->start = 1;  
     g->over = 0;   
     g->found = 0;  
-    g->val = 1;   
+    g->val = 1;    
 
     for (i = 0; i < 4; i++)
     {
@@ -92,7 +91,7 @@ void displayBoard(GameState g)
         printf("\n%s  +---+---+---+%s\n", BOARD, RESET);
     }
 
-    if (g.go == 1)
+    if (g.go == 1) 
         printf("Current Turn: %sRED%s\n", RED, RESET);
     else 
         printf("Current Turn: %sBLUE%s\n", BLUE, RESET);
@@ -104,9 +103,10 @@ void displayBoard(GameState g)
 void getMove(GameState *g, int *row, int *col)
 {
     int r, c;
-    int valid = 0;
+    int validInput = 0;
+    char dump;
 
-    while (!valid)
+    while (validInput == 0)
     {
         printf("--> ENTER YOUR MOVE (ROW AND COLUMN):\n");
         printf("ENTER ROW: ");
@@ -115,7 +115,7 @@ void getMove(GameState *g, int *row, int *col)
             printf("ENTER COLUMN: ");
             if (scanf("%d", &c) == 1)
             {
-                if (!isValidPos(*g, r, c))
+                if (isValidPos(*g, r, c) == 0)
                 {
                     printf("\n--> USER HAS INPUTTED AN INVALID POSITION.\n");
                     printf("--> INPUT MUST BE BETWEEN 1-3 ONLY. TRY AGAIN.\n");
@@ -135,73 +135,117 @@ void getMove(GameState *g, int *row, int *col)
                 {
                     *row = r;
                     *col = c;
-                    valid = 1;
+                    validInput = 1;
                 }
             }
-            else { while (getchar() != '\n'); }
+            else 
+            { 
+                while (scanf("%c", &dump) == 1 && dump != '\n'); 
+            }
         }
-        else { while (getchar() != '\n'); }
+        else 
+        { 
+            while (scanf("%c", &dump) == 1 && dump != '\n'); 
+        }
     }
 }
 
 int isValidPos(GameState g, int row, int col) 
 {
-    return (row >= 1 && row <= 3 && col >= 1 && col <= 3);
+    int valid = 0;
+    if (row >= 1 && row <= 3 && col >= 1 && col <= 3)
+    {
+        valid = 1;
+    }
+    return valid;
 }
 
 void removePos(GameState *g, int row, int col) 
 {
-    if (g->go == 1) g->R[row][col] = 0;
-    else            g->B[row][col] = 0; 
-    
-    g->S[row][col] = 0;
+    if (g->go == 1) 
+    {
+        g->R[row][col] = 0; 
+    }
+    else            
+    {
+        g->B[row][col] = 0; 
+    }
+    g->S[row][col] = 0; 
 }
 
 void replacePos(GameState *g, int row, int col) 
 {
-    if (!isValidPos(*g, row, col)) return;
+    if (isValidPos(*g, row, col) == 1)
+    {
+        g->found = 0; 
 
-    g->found = 0; 
+        if (g->go == 1) 
+        {
+            if (g->B[row][col] == 1) 
+            { 
+                g->B[row][col] = 0; 
+                g->found = 1; 
+            }
+            else if (g->R[row][col] == 1) 
+            { 
+                g->found = 1; 
+            }
+            
+            if (g->R[row][col] == 0) 
+            {
+                g->R[row][col] = 1;
+            }
+        } 
+        else 
+        {
+            if (g->R[row][col] == 1) 
+            { 
+                g->R[row][col] = 0; 
+                g->found = 1; 
+            }
+            else if (g->B[row][col] == 1) 
+            { 
+                g->found = 1; 
+            }
 
-    /* Logic for capturing/finding pieces */
-    if (g->go == 1) {
-        if (g->B[row][col] == 1) { g->B[row][col] = 0; g->found = 1; }
-        else if (g->R[row][col] == 1) { g->found = 1; }
-        if (g->R[row][col] == 0) g->R[row][col] = 1;
-    } else {
-        if (g->R[row][col] == 1) { g->R[row][col] = 0; g->found = 1; }
-        else if (g->B[row][col] == 1) { g->found = 1; }
-        if (g->B[row][col] == 0) g->B[row][col] = 1;
-    }
+            if (g->B[row][col] == 0) 
+            {
+                g->B[row][col] = 1;
+            }
+        }
 
-    /* Expansion Trigger */
-    if (g->found == 1 && g->S[row][col] == 0) {
-        g->S[row][col] = 1;
-        g->found = 0;
-    } 
-    else if (g->found == 1 && g->S[row][col] == 1 && g->T[row][col] == 0) {
-        g->T[row][col] = 1;
-        expandPos(g, row, col);
+        if (g->found == 1 && g->S[row][col] == 0) 
+        {
+            g->S[row][col] = 1;
+            g->found = 0;
+        } 
+        else if (g->found == 1 && g->S[row][col] == 1 && g->T[row][col] == 0) 
+        {
+            g->T[row][col] = 1; 
+            expandPos(g, row, col);
+        }
     }
 }
 
 void expandPos(GameState *g, int row, int col) 
 {
-    removePos(g, row, col);
-    replacePos(g, row - 1, col);
-    replacePos(g, row + 1, col);
-    replacePos(g, row, col - 1);
+    removePos(g, row, col); 
+    replacePos(g, row - 1, col); 
+    replacePos(g, row + 1, col); 
+    replacePos(g, row, col - 1); 
     replacePos(g, row, col + 1); 
 }
 
-void updatePos(GameState *g, int row, int col)
+void updatePos(GameState *g, int row, int col) 
 {
     g->good = 0; 
-    if (g->S[row][col] == 0) {
+    if (g->S[row][col] == 0) 
+    {
         g->S[row][col] = 1;
-        g->good = 1;
+        g->good = 1; 
     } 
-    else if (g->good == 0 && g->S[row][col] == 1 && g->T[row][col] == 0) {
+    else if (g->good == 0 && g->S[row][col] == 1 && g->T[row][col] == 0) 
+    {
         g->T[row][col] = 1;
         expandPos(g, row, col);
         g->good = 1; 
@@ -211,31 +255,57 @@ void updatePos(GameState *g, int row, int col)
 void nextPlayerMove(GameState *g, int row, int col) 
 {
     int i, j;
-    if (g->over == 1) return;
     
-    if (g->start == 1) {
-        if (g->go == 1) g->R[row][col] = 1;
-        else            g->B[row][col] = 1;
-        g->S[row][col] = 1;
-        g->good = 1;
-    } 
-    else {
-        if ((g->go == 1 && g->R[row][col] == 1) || (g->go == 0 && g->B[row][col] == 1)) {
-            updatePos(g, row, col);
+    if (g->over == 0) 
+    {
+        if (g->start == 1) 
+        {
+            if (g->go == 1) 
+            {
+                g->R[row][col] = 1; 
+            }
+            else            
+            {
+                g->B[row][col] = 1; 
+            }
+            g->S[row][col] = 1;
             g->good = 1;
+        } 
+        else 
+        {
+            if ((g->go == 1 && g->R[row][col] == 1) || (g->go == 0 && g->B[row][col] == 1)) 
+            {
+                updatePos(g, row, col);
+                g->good = 1;
+            }
         }
-    }
 
-    if (g->start == 1 && countPieces(g->R) >= 1 && countPieces(g->B) >= 1) {
-        g->start = 0;
-    }
-    if (g->good == 1) {
-        g->go = (g->go == 1) ? 0 : 1; 
-        g->val = g->val + 1;        
-        for (i = 0; i < 4; i++) 
-            for (j = 0; j < 4; j++) 
-                g->T[i][j] = 0; 
-        g->good = 0;
+        if (g->start == 1 && countPieces(g->R) >= 1 && countPieces(g->B) >= 1) 
+        {
+            g->start = 0;
+        }
+
+        if (g->good == 1) 
+        {
+            if (g->go == 1)
+            {
+                g->go = 0;
+            }
+            else
+            {
+                g->go = 1;
+            }
+            
+            g->val = g->val + 1;         
+            for (i = 0; i < 4; i++) 
+            {
+                for (j = 0; j < 4; j++) 
+                {
+                    g->T[i][j] = 0; 
+                }
+            }
+            g->good = 0;
+        }
     }
 }
 
@@ -243,8 +313,15 @@ int countPieces(int board[4][4])
 {
     int i, j, count = 0;
     for(i = 1; i <= 3; i++)
+    {
         for(j = 1; j <= 3; j++)
-            if(board[i][j]) count++;
+        {
+            if(board[i][j] != 0) 
+            {
+                count++;
+            }
+        }
+    }
     return count;
 }
 
@@ -252,8 +329,15 @@ int countFreeCells(GameState g)
 {
     int i, j, occupied = 0;
     for(i = 1; i <= 3; i++)
+    {
         for(j = 1; j <= 3; j++)
-            if(g.S[i][j] == 1) occupied++;
+        {
+            if(g.S[i][j] == 1) 
+            {
+                occupied++;
+            }
+        }
+    }
     return 9 - occupied;
 }
 
@@ -262,9 +346,11 @@ void checkGameOver(GameState *g)
     int rCount = countPieces(g->R);
     int bCount = countPieces(g->B);
     int free = countFreeCells(*g);
-    
-    if (free == 3 || g->val >= 20 || (!g->start && (rCount == 0 || bCount == 0)))
+
+    if (free == 3 || g->val >= 20 || (g->start == 0 && (rCount == 0 || bCount == 0)))
+    {
         g->over = 1;
+    }
 }
 
 void showResult(GameState g) 
@@ -275,7 +361,16 @@ void showResult(GameState g)
     printf("%sRed%s pieces: %d\n", "\033[31m", "\033[0m", nRed);
     printf("%sBlue%s pieces: %d\n", "\033[34m", "\033[0m", nBlue);
 
-    if (nRed > nBlue)      printf("--> WINNER: %sRED%s\n", "\033[31m", "\033[0m");
-    else if (nBlue > nRed) printf("--> WINNER: %sBLUE%s\n", "\033[34m", "\033[0m");
-    else                   printf("--> RESULT: %sDRAW%s\n", "\033[33m", "\033[0m");
+    if (nRed > nBlue)      
+    {
+        printf("--> WINNER: %sRED%s\n", "\033[31m", "\033[0m");
+    }
+    else if (nBlue > nRed) 
+    {
+        printf("--> WINNER: %sBLUE%s\n", "\033[34m", "\033[0m");
+    }
+    else                   
+    {
+        printf("--> RESULT: %sDRAW%s\n", "\033[33m", "\033[0m");
+    }
 }
