@@ -296,7 +296,7 @@ void nextPlayerMove(GameState *g, int row, int col)
 
 
     if (g->good == 1) 
-    {)
+    {
         g->go = (g->go == 0) ? 1 : 0;
         g->val = g->val + 1;
 
