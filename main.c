@@ -1,11 +1,13 @@
+/******************************************************************************
+ *  Description     : Game mechanic functions for chain reaction game
+ *  Author/s        : Gagasa, Emmanuel
+ *                    Nono, Shenelle Andrea
+ *                    Fornoles, Sabina
+ *  Section         : S15 / S05
+ ******************************************************************************/
+
 #include <stdio.h>
 #include "functions.h"
-/*
-UPDATE LOG AS OF 24/03/2026:
-- added InitializeGame() function
-- added isValidPos() although idk kung tama na ba yun
-- added showResult ()
-*/
 
 int main ()
 {
