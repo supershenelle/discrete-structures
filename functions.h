@@ -11,6 +11,7 @@ typedef struct
     int found;
     int val;
 
+    // 4x4 buffer para index 1-3 will be allowed
     int R[4][4];
     int B[4][4];
     int S[4][4];
@@ -18,17 +19,13 @@ typedef struct
 
 } GameState;
 
-
-/* ============================= */
-/* FUNCTION PROTOTYPES      */
-/* ============================= */
-
-
+// function prototypes
+void displayDivider();
 void initializeGame(GameState *g); 
 void displayBoard(GameState g);
 
-void getMove(int *row, int *col); 
-int isValidPos(int row, int col); 
+void getMove(GameState *g, int *row, int *col); 
+int isValidPos(GameState g, int row, int col); 
 
 void removePos(GameState *g, int row, int col); 
 void replacePos(GameState *g, int row, int col); 
@@ -42,8 +39,12 @@ int countFreeCells(GameState g);
 void checkGameOver(GameState *g);
 void showResult(GameState g);
 
-/* ------------------------------------------------------------- */
-    
+// function implementations
+void displayDivider() 
+{
+    printf("===========================================\n");
+}
+
 /* Initialization */
 void initializeGame(GameState *g)
 {
@@ -99,7 +100,6 @@ void displayBoard(GameState g)
 
     for(i = 1; i <= 3; i++) 
     {
-
         printf("%s%d |%s", BOARD, i, RESET);
 
         for(j = 1; j <= 3; j++) 
@@ -124,43 +124,74 @@ void displayBoard(GameState g)
 
     // display population
     printf("Current Val: %d\n", g.val);
+    displayDivider();
 }
 
-// input
-void getMove(int *row, int *col)
+/* Player Input */
+void getMove(GameState *g, int *row, int *col)
 {
     int r, c;
     int valid = 0;
 
     while (!valid)
     {
-        printf("Enter your move (row and col, 1-3): ");
+        printf("--> ENTER YOUR MOVE (ROW AND COLUMN):\n");
+        printf("ENTER ROW: ");
         
-        // check if input is numeric
-        if (scanf("%d %d", &r, &c) == 2)
+        // check if input is numeric for row
+        if (scanf("%d", &r) == 1)
         {
-            // check if the position is within set M
-            if (isValidPos(r, c))
+            printf("ENTER COLUMN: ");
+            
+            // check if input is numeric for column
+            if (scanf("%d", &c) == 1)
             {
-                *row = r;
-                *col = c;
-                valid = 1;
+                // check if the position is within set M
+                if (!isValidPos(*g, r, c))
+                {
+                    printf("\n--> USER HAS INPUTTED AN INVALID POSITION.\n");
+                    printf("--> INPUT MUST BE BETWEEN 1-3 ONLY. TRY AGAIN.\n");
+                    displayDivider();
+                }
+                else if (g->start == 1 && g->S[r][c] == 1)
+                {
+                    printf("\n--> POSITION IS OCCUPIED. TRY AGAIN.\n");
+                    displayDivider();
+                }
+                else if (g->start == 0 && !((g->go == 0 && g->R[r][c] == 1) || (g->go == 1 && g->B[r][c] == 1)))
+                {
+                    printf("\n--> CHOOSE YOUR OWN PIECE TO EXPAND. TRY AGAIN.\n");
+                    displayDivider();
+                }
+                else
+                {
+                    *row = r;
+                    *col = c;
+                    valid = 1;
+                }
             }
             else
             {
-                printf("Invalid position. Must be between 1 and 3.\n");
+                printf("\n--> INVALID INPUT FORMAT FOR COLUMN.\n");
+                printf("--> INPUT MUST BE AN INTEGER BETWEEN 1-3. TRY AGAIN.\n");
+                displayDivider();
+                // getchar pampatanggal infinite loops
+                while (getchar() != '\n');
             }
         }
         else
         {
-            printf("Invalid input format. Please enter two integers.\n");
+            printf("\n--> INVALID INPUT FORMAT FOR ROW.\n");
+            printf("--> INPUT MUST BE AN INTEGER (1-3). TRY AGAIN.\n");
+            displayDivider();
             // getchar pampatanggal infinite loops
             while (getchar() != '\n');
         }
     }
 }
 
-int isValidPos(int row, int col)
+/* Validation */
+int isValidPos(GameState g, int row, int col)
 {
     int valid = 0;
 
@@ -171,16 +202,28 @@ int isValidPos(int row, int col)
 }
 
 /* Game Actions */
-void removePos(GameState *g, int row, int col) 
+void removePos(GameState *g, int row, int col)
 {
-    /* Only remove the piece at the specific coordinate */
-    g->R[row][col] = 0;
-    g->B[row][col] = 0;
-    g->S[row][col] = 0;
-    g->T[row][col] = 0;
+    if (g->go == 0) // red turn
+    {
+        if (g->B[row][col] == 1)
+        {
+            g->B[row][col] = 0;
+            g->S[row][col] = 0;
+        }
+    }
+    else // blue turn
+    {
+        if (g->R[row][col] == 1)
+        {
+            g->R[row][col] = 0;
+            g->S[row][col] = 0;
+        }
+    }
 }
 
-void replacePos(GameState *g, int row, int col) 
+/* Replace Position */
+void replacePos(GameState *g, int row, int col)
 {
     // 1. Boundary Check: Stop if we go outside the 3x3 play area
     if (row < 1 || row > 3 || col < 1 || col > 3) return;
@@ -228,16 +271,24 @@ void expandPos(GameState *g, int row, int col)
     g->S[row][col] = 1; // Mark as occupied
 }
 
-void expandPos(GameState *g, int row, int col) 
+/* Expand Position */
+void expandPos(GameState *g, int row, int col)
 {
-    removePos(g, row, col);
-    /* Spread to neighbors - each will call replacePos again */
-    replacePos(g, row - 1, col);
-    replacePos(g, row + 1, col);
-    replacePos(g, row, col - 1);
-    replacePos(g, row, col + 1);
+    if (isValidPos(*g, row, col))
+    {
+        if (g->T[row][col] == 0)
+        {
+            g->T[row][col] = 1;
+
+            replacePos(g, row - 1, col);
+            replacePos(g, row + 1, col);
+            replacePos(g, row, col - 1);
+            replacePos(g, row, col + 1);
+        }
+    }
 }
 
+/* Update Position */
 void updatePos(GameState *g, int row, int col) 
 {
     if (g->S[row][col] == 0) 
@@ -253,6 +304,7 @@ void updatePos(GameState *g, int row, int col)
     }
 }
 
+/* Next Player Move */
 void nextPlayerMove(GameState *g, int row, int col) 
 {
     int i, j;
@@ -315,7 +367,7 @@ void nextPlayerMove(GameState *g, int row, int col)
     }
 }
 
-/* Utility Functions */
+/* Count Pieces */
 int countPieces(int board[4][4]) 
 {
     int i, j, count = 0;
@@ -327,6 +379,7 @@ int countPieces(int board[4][4])
     return count;
 }
 
+/* Count Vacant Cells*/
 int countFreeCells(GameState g) 
 {
     int i, j, occupied = 0;
@@ -348,6 +401,7 @@ void checkGameOver(GameState *g)
         g->over = 1;
 }
 
+/* Show Result YAYYYYYY */
 void showResult(GameState g)
 {
     int nRed, nBlue; // pang count sa pieces
@@ -355,14 +409,14 @@ void showResult(GameState g)
     nRed = countPieces(g.R); //array pointing to red pieces nd so on..
     nBlue = countPieces(g.B);
 
-    printf("| ------- GAME OVER ------- |\n"); // idk pa ano display adjust k nalang soon
-    printf("Red pieces: %d\n", nRed);
-    printf("Blue pieces: %d\n", nBlue);
+    printf("| -------------- GAME OVER -------------- |\n"); // idk pa ano display adjust k nalang soon
+    printf("%sRed%s pieces: %d\n", "\033[31m", "\033[0m", nRed);
+    printf("%sBlue%s pieces: %d\n", "\033[34m", "\033[0m", nBlue);
 
     if (nRed > nBlue)
-        printf("WINNER: RED\n");
+        printf("--> WINNER: %sRED%s\n", "\033[31m", "\033[0m");
     else if (nBlue > nRed)
-        printf("WINNER: BLUE\n");
+        printf("--> WINNER: %sBLUE%s\n", "\033[34m", "\033[0m");
     else
-        printf("RESULT: DRAW\n");
+        printf("--> RESULT: %sDRAW%s\n", "\033[33m", "\033[0m");
 }
