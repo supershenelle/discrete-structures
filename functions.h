@@ -56,9 +56,9 @@ void initializeGame(GameState *g)
     g->found = 0; 
     g->val = 0; // general counting variable for values
 
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 4; i++)
     {
-        for (j = 0; j < 3; j++)
+        for (j = 0; j < 4; j++)
         {
             g->R[i][j] = 0; //red
             g->B[i][j] = 0; //blue
@@ -97,12 +97,12 @@ void displayBoard(GameState g)
     printf("\n%s    1   2   3%s\n", BOARD, RESET);
     printf("%s  +---+---+---+%s\n", BOARD, RESET);
 
-    for(i = 0; i < 3; i++) 
+    for(i = 1; i <= 3; i++) 
     {
 
         printf("%s%d |%s", BOARD, i, RESET);
 
-        for(j = 0; j < 3; j++) 
+        for(j = 1; j <= 3; j++) 
         {
         // eto ung if nasa set R or B ung pieces
             if(g.R[i][j] == 1)
@@ -134,7 +134,7 @@ void getMove(int *row, int *col)
 
     while (!valid)
     {
-        printf("Enter your move (row and col, 0-3): ");
+        printf("Enter your move (row and col, 1-3): ");
         
         // check if input is numeric
         if (scanf("%d %d", &r, &c) == 2)
@@ -148,7 +148,7 @@ void getMove(int *row, int *col)
             }
             else
             {
-                printf("Invalid position. Must be between 0 and 3.\n");
+                printf("Invalid position. Must be between 1 and 3.\n");
             }
         }
         else
@@ -164,7 +164,7 @@ int isValidPos(int row, int col)
 {
     int valid = 0;
 
-    if (row>=1 && row<3 && col>=1 && col<3)
+    if (row >= 1 && row <= 3 && col >= 1 && col <= 3)
         valid = 1;
 
     return valid;
@@ -281,8 +281,8 @@ void nextPlayerMove(GameState *g, int row, int col)
 int countPieces(int board[4][4]) 
 {
     int i, j, count = 0;
-    for(i = 0; i < 4; i++)
-        for(j = 0; j < 4; j++)
+    for(i = 1; i <= 3; i++)
+        for(j = 1; j <= 3; j++)
             if(board[i][j])
                 count++;
     
@@ -292,8 +292,8 @@ int countPieces(int board[4][4])
 int countFreeCells(GameState g) 
 {
     int i, j, occupied = 0;
-    for(i = 0; i < 3; i++)
-        for(j = 0; j < 3; j++)
+    for(i = 1; i <= 3; i++)
+        for(j = 1; j <= 3; j++)
             if(g.R[i][j] == 1|| g.B[i][j] == 1) 
                 occupied++;
     return 9 - occupied; // 4x4 matrix
@@ -317,7 +317,7 @@ void showResult(GameState g)
     nRed = countPieces(g.R); //array pointing to red pieces nd so on..
     nBlue = countPieces(g.B);
 
-    printf("| ------- GAME OVER ------- |"); // idk pa ano display adjust k nalang soon
+    printf("| ------- GAME OVER ------- |\n"); // idk pa ano display adjust k nalang soon
     printf("Red pieces: %d\n", nRed);
     printf("Blue pieces: %d\n", nBlue);
 
