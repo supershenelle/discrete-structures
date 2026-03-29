@@ -6,12 +6,12 @@
 
 typedef struct
 {
-    int good;   /* boolean: true/false */
-    int go;     /* boolean: true/false (Red/Blue) */
-    int start;  /* boolean: true/false */
-    int over;   /* boolean: true/false */
-    int found;  /* boolean: true/false */
-    int val;    /* positive integer */
+    int good;  
+    int go;     
+    int start;
+    int over;  
+    int found; 
+    int val;  
 
     int R[4][4];
     int B[4][4];
@@ -92,7 +92,7 @@ void displayBoard(GameState g)
         printf("\n%s  +---+---+---+%s\n", BOARD, RESET);
     }
 
-    if (g.go == 1) /* go is true */
+    if (g.go == 1)
         printf("Current Turn: %sRED%s\n", RED, RESET);
     else 
         printf("Current Turn: %sBLUE%s\n", BLUE, RESET);
@@ -144,24 +144,24 @@ void getMove(GameState *g, int *row, int *col)
     }
 }
 
-int isValidPos(GameState g, int row, int col) /* C: {x in Z+ | x < 4} */
+int isValidPos(GameState g, int row, int col) 
 {
     return (row >= 1 && row <= 3 && col >= 1 && col <= 3);
 }
 
 void removePos(GameState *g, int row, int col) 
 {
-    if (g->go == 1) g->R[row][col] = 0; /* go -> R = R - {pos} */
-    else            g->B[row][col] = 0; /* ~go -> B = B - {pos} */
+    if (g->go == 1) g->R[row][col] = 0;
+    else            g->B[row][col] = 0; 
     
-    g->S[row][col] = 0; /* S = S - {pos} [cite: 31] */
+    g->S[row][col] = 0;
 }
 
 void replacePos(GameState *g, int row, int col) 
 {
     if (!isValidPos(*g, row, col)) return;
 
-    g->found = 0; /* found = false [cite: 37] */
+    g->found = 0; 
 
     /* Logic for capturing/finding pieces */
     if (g->go == 1) {
@@ -180,31 +180,31 @@ void replacePos(GameState *g, int row, int col)
         g->found = 0;
     } 
     else if (g->found == 1 && g->S[row][col] == 1 && g->T[row][col] == 0) {
-        g->T[row][col] = 1; /* T = T U {pos} */
+        g->T[row][col] = 1;
         expandPos(g, row, col);
     }
 }
 
 void expandPos(GameState *g, int row, int col) 
 {
-    removePos(g, row, col); /* Remove(pos) [cite: 57] */
-    replacePos(g, row - 1, col); /* Replace(u) */
-    replacePos(g, row + 1, col); /* Replace(d) */
-    replacePos(g, row, col - 1); /* Replace(k) */
-    replacePos(g, row, col + 1); /* Replace(r) */
+    removePos(g, row, col);
+    replacePos(g, row - 1, col);
+    replacePos(g, row + 1, col);
+    replacePos(g, row, col - 1);
+    replacePos(g, row, col + 1); 
 }
 
 void updatePos(GameState *g, int row, int col)
 {
-    g->good = 0; /* good = false */
+    g->good = 0; 
     if (g->S[row][col] == 0) {
         g->S[row][col] = 1;
-        g->good = 1; /* good = ~good */
+        g->good = 1;
     } 
     else if (g->good == 0 && g->S[row][col] == 1 && g->T[row][col] == 0) {
         g->T[row][col] = 1;
         expandPos(g, row, col);
-        g->good = 1; /* Resulting in good = true after expansion */
+        g->good = 1; 
     }
 }
 
@@ -214,8 +214,8 @@ void nextPlayerMove(GameState *g, int row, int col)
     if (g->over == 1) return;
     
     if (g->start == 1) {
-        if (g->go == 1) g->R[row][col] = 1; /* go -> R = R U {pos} */
-        else            g->B[row][col] = 1; /* ~go -> B = B U {pos} */
+        if (g->go == 1) g->R[row][col] = 1;
+        else            g->B[row][col] = 1;
         g->S[row][col] = 1;
         g->good = 1;
     } 
@@ -227,18 +227,15 @@ void nextPlayerMove(GameState *g, int row, int col)
         }
     }
 
-    /* Transition to normal gameplay */
     if (g->start == 1 && countPieces(g->R) >= 1 && countPieces(g->B) >= 1) {
         g->start = 0;
     }
-
-    /* Successful move completion */
     if (g->good == 1) {
-        g->go = (g->go == 1) ? 0 : 1; /* go = ~go */
-        g->val = g->val + 1;         /* val = val + 1 */
+        g->go = (g->go == 1) ? 0 : 1; 
+        g->val = g->val + 1;        
         for (i = 0; i < 4; i++) 
             for (j = 0; j < 4; j++) 
-                g->T[i][j] = 0; /* Reset T set after turn */
+                g->T[i][j] = 0; 
         g->good = 0;
     }
 }
@@ -266,8 +263,7 @@ void checkGameOver(GameState *g)
     int rCount = countPieces(g->R);
     int bCount = countPieces(g->B);
     int free = countFreeCells(*g);
-
-    /* (F = 3 OR val >= 20 OR (~start AND wipeout)) */
+    
     if (free == 3 || g->val >= 20 || (!g->start && (rCount == 0 || bCount == 0)))
         g->over = 1;
 }
